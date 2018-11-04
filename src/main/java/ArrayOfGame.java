@@ -2,15 +2,13 @@ import javax.xml.bind.annotation.*;
 import java.util.List;
 
 @XmlRootElement(name = "ArrayOfGame")
-@XmlAccessorType(XmlAccessType.PROPERTY)
+@XmlAccessorType(XmlAccessType.FIELD)
 public class ArrayOfGame {
 
-    public ArrayOfGame(){};
-
+    @XmlElement(name = "Game")
     private List<Game> game;
 
 
-    @XmlElement(name = "Game")
     public List<Game> getGame() {
         return game;
     }

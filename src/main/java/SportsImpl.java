@@ -1,3 +1,4 @@
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -44,11 +45,21 @@ public class SportsImpl {
         StringReader reader = new StringReader(xml);
         ArrayOfGame games = (ArrayOfGame) unmarshaller.unmarshal(reader);
 
-        System.out.println("GAMES?: "+games.toString());
-//
-//        for (Game game:games.getGame()) {
-//            System.out.println("GAME ID: "+game.getSeason());
-//
-//        }
+        for (Game game:games.getGame()) {
+            System.out.println("WEEK**********: "+game.getWeek());
+            System.out.println("Away Team: "+game.getAwayTeamName());
+            System.out.println("Home Team: "+game.getHomeTeamName());
+            System.out.println("DateTime : "+game.getDateTime());
+            System.out.println("Point Spread: "+game.getPointSpread());
+            System.out.println("Home Team Score: "+game.getHomeTeamScore());
+
+            if(game.getPeriods().getPeriod() != null) {
+                for (Period period : game.getPeriods().getPeriod()) {
+                    System.out.println("Period Home: " + period.getHomeScore());
+                    System.out.println("Period Away: " + period.getAwayScore());
+                }
+            }
+
+        }
     }
 }

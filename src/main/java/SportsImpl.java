@@ -53,20 +53,20 @@ public class SportsImpl {
         ArrayOfGame games = (ArrayOfGame) unmarshaller.unmarshal(reader);
 
         for (Game game : games.getGame()) {
-            System.out.println("WEEK**********: " + game.getWeek());
-            System.out.println("Away Team: " + game.getAwayTeamName());
-            System.out.println("Home Team: " + game.getHomeTeamName());
-            System.out.println("DateTime : " + game.getDateTime());
-            System.out.println("Point Spread: " + game.getPointSpread());
-            System.out.println("Home Team Score: " + game.getHomeTeamScore());
+//            System.out.println("WEEK**********: " + game.getWeek());
+//            System.out.println("Away Team: " + game.getAwayTeamName());
+//            System.out.println("Home Team: " + game.getHomeTeamName());
+//            System.out.println("DateTime : " + game.getDateTime());
+//            System.out.println("Point Spread: " + game.getPointSpread());
+//            System.out.println("Home Team Score: " + game.getHomeTeamScore());
 
             Double homeScore = 0.0;
             Double awayScore = 0.0;
             if (game.getPeriods().getPeriod() != null) {
                 for (Period period : game.getPeriods().getPeriod()) {
-                    System.out.println("Period Home: " + period.getHomeScore());
+//                    System.out.println("Period Home: " + period.getHomeScore());
                     homeScore += period.getHomeScore();
-                    System.out.println("Period Away: " + period.getAwayScore());
+//                    System.out.println("Period Away: " + period.getAwayScore());
                     awayScore += period.getAwayScore();
                 }
                 game.setAwayTeamScore(String.valueOf(awayScore));
@@ -92,6 +92,7 @@ public class SportsImpl {
                         + "'" + game.getOverUnder() + "',"
                         + "'" + game.getPointSpread() + "',"
                         + "'" + game.getAwayTeamName() + "',"
+                        + "'" + game.getHomeTeamName() + "',"
                         + "'" + game.getDateTime() + "',"
                         + "'" + game.getStatus() + "',"
                         + "'" + game.getWeek() + "',"
@@ -118,7 +119,7 @@ public class SportsImpl {
         try
         {
             System.out.println("99999999999999");
-            String driver = "org.apache.derby.jdbc.EmbeddedDriver";
+            String driver = "org.apache.derby.jdbc.ClientDriver";
 	Class.forName(driver);
             System.out.println("888888");
             //Get a connection

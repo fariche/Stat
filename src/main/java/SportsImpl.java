@@ -10,6 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -130,5 +131,41 @@ public class SportsImpl {
         {
             except.printStackTrace();
         }
+    }
+    
+    public void dbToDto() throws SQLException{
+                createConnection();
+        Statement stmt = conn.createStatement();
+            ResultSet rs; 
+            rs = stmt.executeQuery("SELECT * FROM CFB where status != 'Scheduled'");
+            while ( rs.next() ) {
+                CfbDto cfbDto = new CfbDto();
+                cfbDto.setAwayTeamScore(rs.getString(1));
+                cfbDto.setHomeTeamScore(rs.getString(2));
+                cfbDto.setOverUnder(rs.getString(3));
+                cfbDto.setPointSpread(rs.getString(4));
+                cfbDto.setAwayTeamName(rs.getString(5));
+                cfbDto.setHomeTeamName(rs.getString(6));
+                cfbDto.setDateTime(rs.getString(7));
+                cfbDto.setStatus(rs.getString(8));
+                cfbDto.setWeek(rs.getString(9));
+                cfbDto.setHomeTeamMoneyLine(rs.getString(10));
+                cfbDto.setAwayTeamMoneyLine(rs.getString(11));
+                
+                //Print some
+                System.out.println("Away Team Score: " +cfbDto.getAwayTeamScore());
+                System.out.println("Home Team Score: " +cfbDto.getHomeTeamScore());
+                System.out.println("Over/Under: " +cfbDto.getOverUnder());
+                System.out.println("Point Spread: " +cfbDto.getPointSpread());
+                System.out.println("Away Name: " +cfbDto.getAwayTeamName());
+                System.out.println("Home Name: " +cfbDto.getHomeTeamName());
+                System.out.println("Date/Time: " +cfbDto.getDateTime());
+                System.out.println("Status: " +cfbDto.getStatus());
+                System.out.println("Week: " +cfbDto.getWeek());
+                System.out.println("Home M/L: " +cfbDto.getHomeTeamMoneyLine());
+                System.out.println("Away M/L: " +cfbDto.getAwayTeamMoneyLine());
+            }
+            conn.close();
+    
     }
 }

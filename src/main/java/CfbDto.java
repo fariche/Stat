@@ -12,6 +12,34 @@ import javax.xml.bind.annotation.XmlElement;
  */
 public class CfbDto {
 
+    /**
+     * @return the avgAwayPPGAgainst
+     */
+    public String getAvgAwayPPGAgainst() {
+        return avgAwayPPGAgainst;
+    }
+
+    /**
+     * @param avgAwayPPGAgainst the avgAwayPPGAgainst to set
+     */
+    public void setAvgAwayPPGAgainst(String avgAwayPPGAgainst) {
+        this.avgAwayPPGAgainst = avgAwayPPGAgainst;
+    }
+
+    /**
+     * @return the avgHomePPGAgainst
+     */
+    public String getAvgHomePPGAgainst() {
+        return avgHomePPGAgainst;
+    }
+
+    /**
+     * @param avgHomePPGAgainst the avgHomePPGAgainst to set
+     */
+    public void setAvgHomePPGAgainst(String avgHomePPGAgainst) {
+        this.avgHomePPGAgainst = avgHomePPGAgainst;
+    }
+
     private String week;
     private String status;
     private String dateTime;
@@ -24,8 +52,10 @@ public class CfbDto {
     private String awayTeamMoneyLine;
     private String homeTeamMoneyLine;
     private Periods periods;
-    private String avgAwayPPG;
-    private String avgHomePPG;
+    private String avgAwayPPGFor;
+    private String avgHomePPGFor;
+    private String avgAwayPPGAgainst;
+    private String avgHomePPGAgainst;
 
     /**
      * @return the week
@@ -198,29 +228,29 @@ public class CfbDto {
     /**
      * @return the avgAwayPPG
      */
-    public String getAvgAwayPPG() {
-        return avgAwayPPG;
+    public String getAvgAwayPPGFor() {
+        return avgAwayPPGFor;
     }
 
     /**
      * @param avgAwayPPG the avgAwayPPG to set
      */
-    public void setAvgAwayPPG(String avgAwayPPG) {
-        this.avgAwayPPG = avgAwayPPG;
+    public void setAvgAwayPPGFor(String avgAwayPPGFor) {
+        this.avgAwayPPGFor = avgAwayPPGFor;
     }
 
     /**
      * @return the avgHomePPG
      */
-    public String getAvgHomePPG() {
-        return avgHomePPG;
+    public String getAvgHomePPGFor() {
+        return avgHomePPGFor;
     }
 
     /**
      * @param avgHomePPG the avgHomePPG to set
      */
-    public void setAvgHomePPG(String avgHomePPG) {
-        this.avgHomePPG = avgHomePPG;
+    public void setAvgHomePPGFor(String avgHomePPGFor) {
+        this.avgHomePPGFor = avgHomePPGFor;
     }
 
 }

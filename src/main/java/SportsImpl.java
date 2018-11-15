@@ -13,6 +13,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SportsImpl {
 
@@ -133,11 +135,12 @@ public class SportsImpl {
         }
     }
     
-    public void dbToDto() throws SQLException{
+    public List<CfbDto> dbToDto() throws SQLException{
+        List<CfbDto> cfbDtos = new ArrayList<CfbDto>();
                 createConnection();
         Statement stmt = conn.createStatement();
             ResultSet rs; 
-            rs = stmt.executeQuery("SELECT * FROM CFB where status != 'Scheduled'");
+            rs = stmt.executeQuery("SELECT * FROM CFB where status = 'Final' OR status = 'F/OT'");
             while ( rs.next() ) {
                 CfbDto cfbDto = new CfbDto();
                 cfbDto.setAwayTeamScore(rs.getString(1));
@@ -152,20 +155,75 @@ public class SportsImpl {
                 cfbDto.setHomeTeamMoneyLine(rs.getString(10));
                 cfbDto.setAwayTeamMoneyLine(rs.getString(11));
                 
+                //Set Average Values
+                cfbDto.setAvgHomePPGFor(String.valueOf(getAvgPPGFor(cfbDto.getHomeTeamName())));
+                cfbDto.setAvgAwayPPGFor(String.valueOf(getAvgPPGFor(cfbDto.getAwayTeamName())));
+                cfbDto.setAvgHomePPGAgainst(String.valueOf(getAvgPPGAgainst(cfbDto.getHomeTeamName())));
+                cfbDto.setAvgAwayPPGAgainst(String.valueOf(getAvgPPGAgainst(cfbDto.getAwayTeamName())));
+                
                 //Print some
-                System.out.println("Away Team Score: " +cfbDto.getAwayTeamScore());
-                System.out.println("Home Team Score: " +cfbDto.getHomeTeamScore());
-                System.out.println("Over/Under: " +cfbDto.getOverUnder());
-                System.out.println("Point Spread: " +cfbDto.getPointSpread());
-                System.out.println("Away Name: " +cfbDto.getAwayTeamName());
-                System.out.println("Home Name: " +cfbDto.getHomeTeamName());
-                System.out.println("Date/Time: " +cfbDto.getDateTime());
-                System.out.println("Status: " +cfbDto.getStatus());
-                System.out.println("Week: " +cfbDto.getWeek());
-                System.out.println("Home M/L: " +cfbDto.getHomeTeamMoneyLine());
-                System.out.println("Away M/L: " +cfbDto.getAwayTeamMoneyLine());
+//                System.out.println("");
+//                System.out.println(cfbDto.getHomeTeamName()+": HOME FOR"+cfbDto.getAvgHomePPGFor());
+//                System.out.println(cfbDto.getAwayTeamName()+": AWAY FOR"+cfbDto.getAvgAwayPPGFor());
+//                System.out.println(cfbDto.getHomeTeamName()+": HOME AGAINST"+cfbDto.getAvgHomePPGAgainst());
+//                System.out.println(cfbDto.getAwayTeamName()+": AWAY AGAINST"+cfbDto.getAvgAwayPPGAgainst());
+//                System.out.println("");
+                
+                //Add DTO to list
+                cfbDtos.add(cfbDto);
+                
             }
             conn.close();
+    return cfbDtos;
+    }
     
+    public void calcWinners(List<CfbDto> cfbDtos, int currWeek){
+        
+    }
+    
+    private Double getAvgPPGFor(String teamName) throws SQLException{
+        Statement stmt = conn.createStatement();
+            ResultSet rs,rs1; 
+            Double totalPointsFor = 0.0;
+            int weekCount = 0;
+             
+            //Get Home Total Points Scored
+            rs = stmt.executeQuery("SELECT home_score FROM CFB where home_name = '"+teamName+"' AND (status = 'Final' OR status = 'F/OT')");
+            while ( rs.next() ) {
+                totalPointsFor+=Double.valueOf(rs.getString(1));
+                weekCount++;
+            }   
+            
+            //Get Away Total Points Scored
+            rs1 = stmt.executeQuery("SELECT away_score FROM CFB where away_name = '"+teamName+"' AND (status = 'Final' OR status = 'F/OT')");
+            while ( rs1.next() ) {
+                totalPointsFor+=Double.valueOf(rs1.getString(1));
+                weekCount++;
+            }
+            Double avgPointsFor = totalPointsFor/weekCount;
+                return avgPointsFor;
+    }
+    
+    private Double getAvgPPGAgainst(String teamName) throws SQLException{
+        Statement stmt = conn.createStatement();
+            ResultSet rs,rs1; 
+            Double totalPointsAgainst = 0.0;
+            int weekCount = 0;
+            
+            //Get Home Total Points Scored
+            rs = stmt.executeQuery("SELECT home_score FROM CFB where away_name = '"+teamName+"' AND (status = 'Final' OR status = 'F/OT')");
+            while ( rs.next() ) {
+                totalPointsAgainst+=Double.valueOf(rs.getString(1));
+                weekCount++;
+            }   
+            
+            //Get Away Total Points Scored
+            rs1 = stmt.executeQuery("SELECT away_score FROM CFB where home_name = '"+teamName+"' AND (status = 'Final' OR status = 'F/OT')");
+            while ( rs1.next() ) {
+                totalPointsAgainst+=Double.valueOf(rs1.getString(1));
+                weekCount++;
+            }
+            Double avgPointsAgainst = totalPointsAgainst/weekCount;
+                return avgPointsAgainst;
     }
 }

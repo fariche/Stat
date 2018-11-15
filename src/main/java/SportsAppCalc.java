@@ -1,6 +1,7 @@
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 public class SportsAppCalc {
 
 
@@ -10,7 +11,7 @@ public class SportsAppCalc {
         SportsImpl sports = new SportsImpl();
         
         //Connect to the API and update get the XML 
-        sports.dbToDto();
+        List<CfbDto> cfbDtos = sports.dbToDto();
         
         //Move XML into Pojo via JaxB
        // ArrayOfGame games = sports.StringToJaxb(xml);

@@ -15,8 +15,8 @@ public class CfbDto {
     /**
      * @return the avgAwayPPGAgainst
      */
-    public String getAvgAwayPPGAgainst() {
-        return avgAwayPPGAgainst;
+    public Double getAvgAwayPPGAgainst() {
+        return Double.valueOf(avgAwayPPGAgainst);
     }
 
     /**
@@ -29,8 +29,8 @@ public class CfbDto {
     /**
      * @return the avgHomePPGAgainst
      */
-    public String getAvgHomePPGAgainst() {
-        return avgHomePPGAgainst;
+    public Double getAvgHomePPGAgainst() {
+        return Double.valueOf(avgHomePPGAgainst);
     }
 
     /**
@@ -158,8 +158,8 @@ public class CfbDto {
     /**
      * @return the pointSpread
      */
-    public String getPointSpread() {
-        return pointSpread;
+    public Double getPointSpread() {
+        return Double.valueOf(pointSpread);
     }
 
     /**
@@ -228,8 +228,8 @@ public class CfbDto {
     /**
      * @return the avgAwayPPG
      */
-    public String getAvgAwayPPGFor() {
-        return avgAwayPPGFor;
+    public Double getAvgAwayPPGFor() {
+        return Double.valueOf(avgAwayPPGFor);
     }
 
     /**
@@ -242,8 +242,8 @@ public class CfbDto {
     /**
      * @return the avgHomePPG
      */
-    public String getAvgHomePPGFor() {
-        return avgHomePPGFor;
+    public Double getAvgHomePPGFor() {
+        return Double.valueOf(avgHomePPGFor);
     }
 
     /**

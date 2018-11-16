@@ -11,10 +11,10 @@ public class SportsAppCalc {
         SportsImpl sports = new SportsImpl();
         
         //Connect to the API and update get the XML 
-        List<CfbDto> cfbDtos = sports.dbToDto();
+        List<CfbDto> cfbDtos = sports.dbToDto(12.0);
         
-        //Move XML into Pojo via JaxB
-       // ArrayOfGame games = sports.StringToJaxb(xml);
+        //Calc Winners
+       sports.calcWinners(cfbDtos,10.0);
         
         //Insert Data into the database
         //sports.pojoToDb(games);

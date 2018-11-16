@@ -84,12 +84,12 @@ public class SportsImpl {
     public void pojoToDb(ArrayOfGame games) throws SQLException {
         createConnection();
         try {
-            
+
             System.out.println("333333333333");
             String statement = "";
             for (Game game : games.getGame()) {
                 System.out.println("44444444444");
-                statement = "INSERT INTO "+tableName+" VALUES("
+                statement = "INSERT INTO " + tableName + " VALUES("
                         + "'" + game.getAwayTeamScore() + "',"
                         + "'" + game.getHomeTeamScore() + "',"
                         + "'" + game.getOverUnder() + "',"
@@ -116,114 +116,213 @@ public class SportsImpl {
             conn.close();
         }
     }
-    
-    private static void createConnection()
-    {
-        try
-        {
+
+    private static void createConnection() {
+        try {
             System.out.println("99999999999999");
             String driver = "org.apache.derby.jdbc.ClientDriver";
-	Class.forName(driver);
+            Class.forName(driver);
             System.out.println("888888");
             //Get a connection
-            conn = DriverManager.getConnection(dbURL); 
+            conn = DriverManager.getConnection(dbURL);
             System.out.println("CONNECTION SUCCESSFUL");
-        }
-        catch (Exception except)
-        {
+        } catch (Exception except) {
             except.printStackTrace();
         }
     }
-    
-    public List<CfbDto> dbToDto() throws SQLException{
+
+    public List<CfbDto> dbToDto(Double currWeek) throws SQLException {
         List<CfbDto> cfbDtos = new ArrayList<CfbDto>();
-                createConnection();
+        createConnection();
         Statement stmt = conn.createStatement();
-            ResultSet rs; 
-            rs = stmt.executeQuery("SELECT * FROM CFB where status = 'Final' OR status = 'F/OT'");
-            while ( rs.next() ) {
-                CfbDto cfbDto = new CfbDto();
-                cfbDto.setAwayTeamScore(rs.getString(1));
-                cfbDto.setHomeTeamScore(rs.getString(2));
-                cfbDto.setOverUnder(rs.getString(3));
-                cfbDto.setPointSpread(rs.getString(4));
-                cfbDto.setAwayTeamName(rs.getString(5));
-                cfbDto.setHomeTeamName(rs.getString(6));
-                cfbDto.setDateTime(rs.getString(7));
-                cfbDto.setStatus(rs.getString(8));
-                cfbDto.setWeek(rs.getString(9));
-                cfbDto.setHomeTeamMoneyLine(rs.getString(10));
-                cfbDto.setAwayTeamMoneyLine(rs.getString(11));
-                
-                //Set Average Values
-                cfbDto.setAvgHomePPGFor(String.valueOf(getAvgPPGFor(cfbDto.getHomeTeamName())));
-                cfbDto.setAvgAwayPPGFor(String.valueOf(getAvgPPGFor(cfbDto.getAwayTeamName())));
-                cfbDto.setAvgHomePPGAgainst(String.valueOf(getAvgPPGAgainst(cfbDto.getHomeTeamName())));
-                cfbDto.setAvgAwayPPGAgainst(String.valueOf(getAvgPPGAgainst(cfbDto.getAwayTeamName())));
-                
-                //Print some
+        ResultSet rs;
+        rs = stmt.executeQuery("SELECT * FROM CFB where week = '" + currWeek + "'");
+        while (rs.next()) {
+            CfbDto cfbDto = new CfbDto();
+            cfbDto.setAwayTeamScore(rs.getString(1));
+            cfbDto.setHomeTeamScore(rs.getString(2));
+            cfbDto.setOverUnder(rs.getString(3));
+            cfbDto.setPointSpread(rs.getString(4));
+            cfbDto.setAwayTeamName(rs.getString(5));
+            cfbDto.setHomeTeamName(rs.getString(6));
+            cfbDto.setDateTime(rs.getString(7));
+            cfbDto.setStatus(rs.getString(8));
+            cfbDto.setWeek(rs.getString(9));
+            cfbDto.setHomeTeamMoneyLine(rs.getString(10));
+            cfbDto.setAwayTeamMoneyLine(rs.getString(11));
+
+            //Set Average Values
+            cfbDto.setAvgHomePPGFor(String.valueOf(getAvgPPGFor(cfbDto.getHomeTeamName())));
+            cfbDto.setAvgAwayPPGFor(String.valueOf(getAvgPPGFor(cfbDto.getAwayTeamName())));
+            cfbDto.setAvgHomePPGAgainst(String.valueOf(getAvgPPGAgainst(cfbDto.getHomeTeamName())));
+            cfbDto.setAvgAwayPPGAgainst(String.valueOf(getAvgPPGAgainst(cfbDto.getAwayTeamName())));
+
+            //Print some
 //                System.out.println("");
 //                System.out.println(cfbDto.getHomeTeamName()+": HOME FOR"+cfbDto.getAvgHomePPGFor());
 //                System.out.println(cfbDto.getAwayTeamName()+": AWAY FOR"+cfbDto.getAvgAwayPPGFor());
 //                System.out.println(cfbDto.getHomeTeamName()+": HOME AGAINST"+cfbDto.getAvgHomePPGAgainst());
 //                System.out.println(cfbDto.getAwayTeamName()+": AWAY AGAINST"+cfbDto.getAvgAwayPPGAgainst());
 //                System.out.println("");
+            //Add DTO to list
+            cfbDtos.add(cfbDto);
+
+        }
+        conn.close();
+        System.out.println("SIZE OF LIST: " + cfbDtos.size());
+        return cfbDtos;
+    }
+
+    public void calcWinners(List<CfbDto> cfbDtos, Double confidenceSpread) throws SQLException {
+
+        int noPointSpreadCount = 0;
+        int goodCount = 0;
+        int badCount = 0;
+        int idenPointSpread = 0;
+        for (CfbDto cfbDto : cfbDtos) {
+            System.out.println("");
+            //Check if Point Spread Exists
+            if (cfbDto.getPointSpread() != 0.0) {
+
+                //Get predicted Spread
+                //Double predSpread = cfbDto.getAvgHomePPGFor()-cfbDto.getAvgAwayPPGAgainst();
+                Double predHomeScore = (cfbDto.getAvgHomePPGFor() + cfbDto.getAvgAwayPPGAgainst()) / 2;
                 
-                //Add DTO to list
-                cfbDtos.add(cfbDto);
+                //Add 4 points to the home team score as an edge
+                predHomeScore += 4.0;
                 
+                Double predAwayScore = (cfbDto.getAvgAwayPPGFor() + cfbDto.getAvgHomePPGAgainst()) / 2;
+                Double predSpread = predAwayScore - predHomeScore;
+
+                //CHECK IF HOME IS A GOOD PICK
+                //If predicted spread is greater than the actual spread, meaning
+                // I think the Home Team will win by more points than actual spread
+                if (predSpread < cfbDto.getPointSpread()) {
+                    //Great! My predicted spread is better than the actual spread, so
+                    //I think the home team is going to cover the spread at the book. But by how
+                    //much? A couple points is ok, but the larger the prediction, the 
+                    //more confident I am in this pick
+                    if ((cfbDto.getPointSpread() - predSpread) > confidenceSpread) {
+                        System.out.println("HOME GOOD GAME. Confidence: " + confidenceSpread + " points! Actual: "
+                                + (cfbDto.getPointSpread() - predSpread));
+                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
+                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
+                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
+                        System.out.println("Predicted Spread: " + predSpread);
+                        System.out.println("Home Score : " + predHomeScore);
+                        System.out.println("Away Score : " + predAwayScore);
+                        goodCount++;
+                    } else {
+                        System.out.println("HOME NOT WORTH IT Confidence: " + confidenceSpread
+                                + " points, Actual: " + (cfbDto.getPointSpread() - predSpread));
+                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
+                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
+                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
+                        System.out.println("Predicted Spread: " + predSpread);
+                        System.out.println("Home Score : " + predHomeScore);
+                        System.out.println("Away Score : " + predAwayScore);
+                        badCount++;
+                    }
+                } //CHECK IF AWAY IS A GOOD PICK
+                //If predicted spread is less than the actual spread, meaning
+                // I think the Home Team will lose by more points than actual spread
+                //or better yet the Away team will either win or cover the spread
+                else if (predSpread > cfbDto.getPointSpread()) {
+                    //Ok! This is good too, because now the AWAY team looks good.
+                    //My predicted spread says either the AWAY team witll win or 
+                    //cover the spread. But again, by home much? We still need some
+                    //confidence
+                    if ((predSpread - cfbDto.getPointSpread()) > confidenceSpread) {
+                        System.out.println("AWAY GOOD GAME. Confidence: " + confidenceSpread + " points! Actual: "
+                                + (predSpread - cfbDto.getPointSpread()));
+                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
+                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
+                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
+                        System.out.println("Predicted Spread: " + predSpread);
+                        System.out.println("Home Score : " + predHomeScore);
+                        System.out.println("Away Score : " + predAwayScore);
+                        goodCount++;
+                    } else {
+                        System.out.println("AWAY NOT WORTH IT Confidence: " + confidenceSpread
+                                + " points, Actual: " + (predSpread - cfbDto.getPointSpread()));
+                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
+                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
+                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
+                        System.out.println("Predicted Spread: " + predSpread);
+                        System.out.println("Home Score : " + predHomeScore);
+                        System.out.println("Away Score : " + predAwayScore);
+                        badCount++;
+                    }
+                } else {
+                    System.out.println("POINT SPREAD IDENTICAL. Confidence: " + confidenceSpread
+                            + " points, Actual: " + (cfbDto.getPointSpread() - predSpread));
+                    System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
+                    System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
+                    System.out.println("Point Spread: " + cfbDto.getPointSpread());
+                    System.out.println("Predicted Spread: " + predSpread);
+                    System.out.println("Home Score : " + predHomeScore);
+                    System.out.println("Away Score : " + predAwayScore);
+                    idenPointSpread++;
+                }
+                //NO POINT SPREAD in the DAtabase
+            } else {
+                System.out.println("NO POINT SPREAD.");
+                System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
+                System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
+                System.out.println("Point Spread: " + cfbDto.getPointSpread());
+                noPointSpreadCount++;
             }
-            conn.close();
-    return cfbDtos;
+        }
+
+        System.out.println("TOTAL GOOD: " + goodCount);
+        System.out.println("TOTAL BAD: " + badCount);
+        System.out.println("TOTAL NO Spread: " + noPointSpreadCount);
+        System.out.println("IDENTICAL SPREADS: " + idenPointSpread);
     }
-    
-    public void calcWinners(List<CfbDto> cfbDtos, int currWeek){
-        
-    }
-    
-    private Double getAvgPPGFor(String teamName) throws SQLException{
+
+    private Double getAvgPPGFor(String teamName) throws SQLException {
         Statement stmt = conn.createStatement();
-            ResultSet rs,rs1; 
-            Double totalPointsFor = 0.0;
-            int weekCount = 0;
-             
-            //Get Home Total Points Scored
-            rs = stmt.executeQuery("SELECT home_score FROM CFB where home_name = '"+teamName+"' AND (status = 'Final' OR status = 'F/OT')");
-            while ( rs.next() ) {
-                totalPointsFor+=Double.valueOf(rs.getString(1));
-                weekCount++;
-            }   
-            
-            //Get Away Total Points Scored
-            rs1 = stmt.executeQuery("SELECT away_score FROM CFB where away_name = '"+teamName+"' AND (status = 'Final' OR status = 'F/OT')");
-            while ( rs1.next() ) {
-                totalPointsFor+=Double.valueOf(rs1.getString(1));
-                weekCount++;
-            }
-            Double avgPointsFor = totalPointsFor/weekCount;
-                return avgPointsFor;
+        ResultSet rs, rs1;
+        Double totalPointsFor = 0.0;
+        int weekCount = 0;
+
+        //Get Home Total Points Scored
+        rs = stmt.executeQuery("SELECT home_score FROM CFB where home_name = '" + teamName + "' AND (status = 'Final' OR status = 'F/OT')");
+        while (rs.next()) {
+            totalPointsFor += Double.valueOf(rs.getString(1));
+            weekCount++;
+        }
+
+        //Get Away Total Points Scored
+        rs1 = stmt.executeQuery("SELECT away_score FROM CFB where away_name = '" + teamName + "' AND (status = 'Final' OR status = 'F/OT')");
+        while (rs1.next()) {
+            totalPointsFor += Double.valueOf(rs1.getString(1));
+            weekCount++;
+        }
+        Double avgPointsFor = totalPointsFor / weekCount;
+        return avgPointsFor;
     }
-    
-    private Double getAvgPPGAgainst(String teamName) throws SQLException{
+
+    private Double getAvgPPGAgainst(String teamName) throws SQLException {
         Statement stmt = conn.createStatement();
-            ResultSet rs,rs1; 
-            Double totalPointsAgainst = 0.0;
-            int weekCount = 0;
-            
-            //Get Home Total Points Scored
-            rs = stmt.executeQuery("SELECT home_score FROM CFB where away_name = '"+teamName+"' AND (status = 'Final' OR status = 'F/OT')");
-            while ( rs.next() ) {
-                totalPointsAgainst+=Double.valueOf(rs.getString(1));
-                weekCount++;
-            }   
-            
-            //Get Away Total Points Scored
-            rs1 = stmt.executeQuery("SELECT away_score FROM CFB where home_name = '"+teamName+"' AND (status = 'Final' OR status = 'F/OT')");
-            while ( rs1.next() ) {
-                totalPointsAgainst+=Double.valueOf(rs1.getString(1));
-                weekCount++;
-            }
-            Double avgPointsAgainst = totalPointsAgainst/weekCount;
-                return avgPointsAgainst;
+        ResultSet rs, rs1;
+        Double totalPointsAgainst = 0.0;
+        int weekCount = 0;
+
+        //Get Home Total Points Scored
+        rs = stmt.executeQuery("SELECT home_score FROM CFB where away_name = '" + teamName + "' AND (status = 'Final' OR status = 'F/OT')");
+        while (rs.next()) {
+            totalPointsAgainst += Double.valueOf(rs.getString(1));
+            weekCount++;
+        }
+
+        //Get Away Total Points Scored
+        rs1 = stmt.executeQuery("SELECT away_score FROM CFB where home_name = '" + teamName + "' AND (status = 'Final' OR status = 'F/OT')");
+        while (rs1.next()) {
+            totalPointsAgainst += Double.valueOf(rs1.getString(1));
+            weekCount++;
+        }
+        Double avgPointsAgainst = totalPointsAgainst / weekCount;
+        return avgPointsAgainst;
     }
 }

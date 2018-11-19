@@ -11,13 +11,15 @@ public class SportsAppCalc {
         SportsImpl sports = new SportsImpl();
         
         //Connect to the API and update get the XML 
-        List<CfbDto> cfbDtos = sports.dbToDto(12.0);
+        List<CfbDto> cfbDtos = sports.dbToDto(13.0);
         
         //Calc Winners
-       sports.calcWinners(cfbDtos,10.0);
+       sports.calcWinners(cfbDtos,20.0);
         
-        //Insert Data into the database
-        //sports.pojoToDb(games);
+        //Test Calculation
+        //sports.testCalc(16.0);
+        
+        //QC Picks
         
         
         System.out.println("Done");

@@ -130,8 +130,8 @@ public class CfbDto {
     /**
      * @return the homeTeamScore
      */
-    public String getHomeTeamScore() {
-        return homeTeamScore;
+    public Double getHomeTeamScore() {
+        return Double.valueOf(homeTeamScore);
     }
 
     /**
@@ -144,8 +144,8 @@ public class CfbDto {
     /**
      * @return the awayTeamScore
      */
-    public String getAwayTeamScore() {
-        return awayTeamScore;
+    public Double getAwayTeamScore() {
+        return Double.valueOf(awayTeamScore);
     }
 
     /**

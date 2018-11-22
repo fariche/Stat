@@ -16,7 +16,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SportsImpl {
+public class CfbImpl {
 
     private static String dbURL = "jdbc:derby://localhost:1527/sample;user=app;password=app";
     private static String tableName = "cfb";

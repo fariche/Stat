@@ -1,13 +1,13 @@
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.sql.SQLException;
-public class SportsAppDbUpdate {
+public class CfbAppDbUpdate {
 
 
 
     public static void main (String[] args) throws IOException, JAXBException, SQLException {
         //Create Sports Object
-        SportsImpl sports = new SportsImpl();
+        CfbImpl sports = new CfbImpl();
         
         //Connect to the API and update get the XML 
         String xml = sports.connect();

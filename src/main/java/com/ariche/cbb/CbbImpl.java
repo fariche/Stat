@@ -43,7 +43,6 @@ public class CbbImpl {
 //            content.append(inputLine);
 //        }
         in.close();
-        System.out.println(content.toString());
         System.out.println("Connected.");
         return content.toString();
     }

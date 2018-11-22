@@ -1,22 +1,20 @@
-package com.ariche.cbb;
-
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
-public class SportsAppCalc {
+public class CfbAppCalc {
 
 
 
     public static void main (String[] args) throws IOException, JAXBException, SQLException {
         //Get Data from DB and store in DTO
-        CbbImpl sports = new CbbImpl();
+        CfbImpl sports = new CfbImpl();
         
         //Connect to the API and update get the XML 
-            List<CbbDto> cbbDtos = sports.dbToDto("2018-11-20");
+        List<CfbDto> cfbDtos = sports.dbToDto(13.0);
         
         //Calc Winners
-       sports.calcWinners(cbbDtos,13.0);
+       sports.calcWinners(cfbDtos,20.0);
         
         //Test Calculation
         //sports.testCalc(16.0);

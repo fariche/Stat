@@ -25,7 +25,6 @@ public class CfbImpl {
 
     public String connect() throws IOException {
 
-        
         //Request
         System.out.println("Connecting to API...");
         URL url = new URL("https://api.fantasydata.net/v3/cfb/scores/xml/Games/2018");
@@ -268,22 +267,32 @@ public class CfbImpl {
         System.out.println("IDENTICAL SPREADS: " + idenPointSpread);
     }
 
-    public void testCalc(Double confidenceSpread) throws SQLException {
+    public void testCalc(Double confidenceSpread, int currentWeek, int weeksToTest) throws SQLException {
         //Get all the games that are completed
         List<CfbDto> cfbDtos = new ArrayList<CfbDto>();
         createConnection();
         Statement stmt = conn.createStatement();
-        int correctPred = 0;
-        int wrongPred = 0;
+        double correctPred = 0;
+        double wrongPred = 0;
+        int noGame = 0;
+        int i;
         ResultSet rs;
-//        rs = stmt.executeQuery("SELECT * FROM CFB where status = 'Final' OR status = 'F/OT'");
-        rs = stmt.executeQuery("SELECT * FROM CFB where (status = 'Final' OR status = 'F/OT') AND ("
-                + "week='11.0' OR "
-                + "week='10.0' OR "
-                + "week='9.0' )");
-//                + "week='8.0' OR "
-//                + "week='7.0' OR "
-//                + "week='6.0')");
+        System.out.println("");
+        System.out.println("TESTING ALGORITHM...");
+        System.out.println("CURRENT WEEK: "+currentWeek);
+        System.out.println("WEEKS TO TEST: "+weeksToTest);
+        System.out.println("CONFIDENCE SPREAD: "+confidenceSpread);
+        System.out.println("");
+
+        //Build Query for testing
+        String testQuery = "SELECT * FROM CFB where (status = 'Final' OR status = 'F/OT') AND (";
+        for (i = 1; i < weeksToTest; i++) {
+            testQuery += "week='" + (currentWeek - i) + ".0' OR ";
+        }
+        testQuery += "week='" + (currentWeek - (i++) + ".0' )");
+  
+        //Run query
+        rs = stmt.executeQuery(testQuery);
         while (rs.next()) {
             CfbDto cfbDto = new CfbDto();
             cfbDto.setAwayTeamScore(rs.getString(1));
@@ -317,14 +326,6 @@ public class CfbImpl {
             //Actual Spread
             Double actualSpread = cfbDto.getAwayTeamScore() - cfbDto.getHomeTeamScore();
 
-            //Check if Predicted Score is close to Actual. Also, if Actual Score
-            //Would have hit under the predicted algorithm
-//            System.out.println("WEEK: " + cfbDto.getWeek() + " " + cfbDto.getHomeTeamName() + " vs " + cfbDto.getAwayTeamName());
-//            System.out.println("PREDICTED HOME SCORE: " + predHomeScore);
-//            System.out.println("ACTUAL HOME SCORE: " + cfbDto.getHomeTeamScore());
-//            System.out.println("PREDICTED AWAY SCORE: " + predAwayScore);
-//            System.out.println("ACTUAL AWAY SCORE: " + cfbDto.getAwayTeamScore());
-//            System.out.println("");
             if (predSpread < cfbDto.getPointSpread()) {
                 //Great! My predicted spread is better than the actual spread, so
                 //I think the home team is going to cover the spread at the book. But by how
@@ -332,46 +333,38 @@ public class CfbImpl {
                 //more confident I am in this pick
                 if ((cfbDto.getPointSpread() - predSpread) > confidenceSpread) {
                     if ((actualSpread - 3) < cfbDto.getPointSpread()) {
-                        System.out.println("CORRECT PREDICTION HOME GOOD GAME. Confidence: " + confidenceSpread
-                                + " points! Gaming: " + (cfbDto.getPointSpread() - predSpread)
-                                + " ACTUAL: " + actualSpread);
-                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
-                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
-                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
-                        System.out.println("Predicted Spread: " + predSpread);
-                        System.out.println("Home Score : " + predHomeScore);
-                        System.out.println("Away Score : " + predAwayScore);
-                        System.out.println("ACTUAL Home Score : " + cfbDto.getHomeTeamScore());
-                        System.out.println("ACTUAL Away Score : " + cfbDto.getAwayTeamScore());
-                        System.out.println("COMPARABLE: " + (actualSpread - predSpread));
-                        correctPred++;
-                        System.out.println("");
-                    } else {
-                        System.out.println("NOT CORRECT PREDICTION HOME GOOD GAME. Confidence: " + confidenceSpread
-                                + " points! Gaming: " + (cfbDto.getPointSpread() - predSpread)
-                                + " ACTUAL: " + actualSpread);
-                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
-                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
-                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
-                        System.out.println("Predicted Spread: " + predSpread);
-                        System.out.println("Home Score : " + predHomeScore);
-                        System.out.println("Away Score : " + predAwayScore);
-                        System.out.println("ACTUAL Home Score : " + cfbDto.getHomeTeamScore());
-                        System.out.println("ACTUAL Away Score : " + cfbDto.getAwayTeamScore());
-                        System.out.println("COMPARABLE: " + (actualSpread - predSpread));
-                        wrongPred++;
-                        System.out.println("");
-                    }
-                } else {
-//                        System.out.println("HOME NOT WORTH IT Confidence: " + confidenceSpread
-//                                + " points, Actual: " + (cfbDto.getPointSpread() - predSpread));
+//                        System.out.println("CORRECT PREDICTION HOME GOOD GAME. Confidence: " + confidenceSpread
+//                                + " points! Gaming: " + (cfbDto.getPointSpread() - predSpread)
+//                                + " ACTUAL: " + actualSpread);
 //                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
 //                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
 //                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
 //                        System.out.println("Predicted Spread: " + predSpread);
 //                        System.out.println("Home Score : " + predHomeScore);
 //                        System.out.println("Away Score : " + predAwayScore);
-//                        badCount++;
+//                        System.out.println("ACTUAL Home Score : " + cfbDto.getHomeTeamScore());
+//                        System.out.println("ACTUAL Away Score : " + cfbDto.getAwayTeamScore());
+//                        System.out.println("COMPARABLE: " + (actualSpread - predSpread));
+                        correctPred++;
+//                        System.out.println("");
+                    } else {
+//                        System.out.println("WRONG PREDICTION HOME GOOD GAME. Confidence: " + confidenceSpread
+//                                + " points! Gaming: " + (cfbDto.getPointSpread() - predSpread)
+//                                + " ACTUAL: " + actualSpread);
+//                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
+//                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
+//                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
+//                        System.out.println("Predicted Spread: " + predSpread);
+//                        System.out.println("Home Score : " + predHomeScore);
+//                        System.out.println("Away Score : " + predAwayScore);
+//                        System.out.println("ACTUAL Home Score : " + cfbDto.getHomeTeamScore());
+//                        System.out.println("ACTUAL Away Score : " + cfbDto.getAwayTeamScore());
+//                        System.out.println("COMPARABLE: " + (actualSpread - predSpread));
+                        wrongPred++;
+//                        System.out.println("");
+                    }
+                } else {
+                        noGame++;
                 }
             } //CHECK IF AWAY IS A GOOD PICK
             //If predicted spread is less than the actual spread, meaning
@@ -384,164 +377,52 @@ public class CfbImpl {
                 //confidence
                 if ((predSpread - cfbDto.getPointSpread()) > confidenceSpread) {
                     if ((actualSpread + 3) > cfbDto.getPointSpread()) {
-                        System.out.println("CORRECT PREDICTION AWAY GOOD GAME. Confidence: " + confidenceSpread
-                                + " points! Gaming: " + (predSpread - cfbDto.getPointSpread())
-                                + " ACTUAL: " + actualSpread);
-                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
-                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
-                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
-                        System.out.println("Predicted Spread: " + predSpread);
-                        System.out.println("Home Score : " + predHomeScore);
-                        System.out.println("Away Score : " + predAwayScore);
-                        System.out.println("ACTUAL Home Score : " + cfbDto.getHomeTeamScore());
-                        System.out.println("ACTUAL Away Score : " + cfbDto.getAwayTeamScore());
-                        System.out.println("COMPARABLE: " + (actualSpread - predSpread));
+//                        System.out.println("CORRECT PREDICTION AWAY GOOD GAME. Confidence: " + confidenceSpread
+//                                + " points! Gaming: " + (predSpread - cfbDto.getPointSpread())
+//                                + " ACTUAL: " + actualSpread);
+//                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
+//                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
+//                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
+//                        System.out.println("Predicted Spread: " + predSpread);
+//                        System.out.println("Home Score : " + predHomeScore);
+//                        System.out.println("Away Score : " + predAwayScore);
+//                        System.out.println("ACTUAL Home Score : " + cfbDto.getHomeTeamScore());
+//                        System.out.println("ACTUAL Away Score : " + cfbDto.getAwayTeamScore());
+//                        System.out.println("COMPARABLE: " + (actualSpread - predSpread));
                         correctPred++;
-                        System.out.println("");
+//                        System.out.println("");
                     } else {
-                        System.out.println("NOT CORRECT PREDICTION AWAY GOOD GAME. Confidence: " + confidenceSpread
-                                + " points! Gaming: " + (predSpread - cfbDto.getPointSpread())
-                                + " ACTUAL: " + actualSpread);
-                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
-                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
-                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
-                        System.out.println("Predicted Spread: " + predSpread);
-                        System.out.println("Home Score : " + predHomeScore);
-                        System.out.println("Away Score : " + predAwayScore);
-                        System.out.println("ACTUAL Home Score : " + cfbDto.getHomeTeamScore());
-                        System.out.println("ACTUAL Away Score : " + cfbDto.getAwayTeamScore());
-                        System.out.println("COMPARABLE: " + (actualSpread - predSpread));
+//                        System.out.println("NOT CORRECT PREDICTION AWAY GOOD GAME. Confidence: " + confidenceSpread
+//                                + " points! Gaming: " + (predSpread - cfbDto.getPointSpread())
+//                                + " ACTUAL: " + actualSpread);
+//                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
+//                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
+//                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
+//                        System.out.println("Predicted Spread: " + predSpread);
+//                        System.out.println("Home Score : " + predHomeScore);
+//                        System.out.println("Away Score : " + predAwayScore);
+//                        System.out.println("ACTUAL Home Score : " + cfbDto.getHomeTeamScore());
+//                        System.out.println("ACTUAL Away Score : " + cfbDto.getAwayTeamScore());
+//                        System.out.println("COMPARABLE: " + (actualSpread - predSpread));
                         wrongPred++;
-                        System.out.println("");
+//                        System.out.println("");
                     }
                 }
             }
+            else{
+                noGame++;
+            }
 
-//                System.out.println("");
-//                System.out.println(cfbDto.getHomeTeamName()+": HOME FOR"+cfbDto.getAvgHomePPGFor());
-//                System.out.println(cfbDto.getAwayTeamName()+": AWAY FOR"+cfbDto.getAvgAwayPPGFor());
-//                System.out.println(cfbDto.getHomeTeamName()+": HOME AGAINST"+cfbDto.getAvgHomePPGAgainst());
-//                System.out.println(cfbDto.getAwayTeamName()+": AWAY AGAINST"+cfbDto.getAvgAwayPPGAgainst());
-//                System.out.println("");
-            //Add DTO to list
             cfbDtos.add(cfbDto);
 
         }
         conn.close();
         System.out.println("TOTAL CORRECT: " + correctPred);
         System.out.println("TOTAL WRONG: " + wrongPred);
-        System.out.println("WINNING %" + ((correctPred / (wrongPred + correctPred)) * 100.00));
+        System.out.println("WINNING %" + ((correctPred/(wrongPred + correctPred))*100));
+        System.out.println("Games Ignored: " + noGame);
         System.out.println("COUNT OF GAMES: " + cfbDtos.size());
 
-    }
-
-    public void qcPicks(List<CfbDto> cfbDtos, Double confidenceSpread) throws SQLException {
-
-        int noPointSpreadCount = 0;
-        int goodCount = 0;
-        int badCount = 0;
-        int idenPointSpread = 0;
-        for (CfbDto cfbDto : cfbDtos) {
-//            System.out.println("");
-            //Check if Point Spread Exists
-            if (cfbDto.getPointSpread() != 0.0) {
-
-                //Get predicted Spread
-                //Double predSpread = cfbDto.getAvgHomePPGFor()-cfbDto.getAvgAwayPPGAgainst();
-                Double predHomeScore = (cfbDto.getAvgHomePPGFor() + cfbDto.getAvgAwayPPGAgainst()) / 2;
-
-                //Add 4 points to the home team score as an edge
-                predHomeScore += 4.0;
-
-                Double predAwayScore = (cfbDto.getAvgAwayPPGFor() + cfbDto.getAvgHomePPGAgainst()) / 2;
-                Double predSpread = predAwayScore - predHomeScore;
-
-                //CHECK IF HOME IS A GOOD PICK
-                //If predicted spread is greater than the actual spread, meaning
-                // I think the Home Team will win by more points than actual spread
-                if (predSpread < cfbDto.getPointSpread()) {
-                    //Great! My predicted spread is better than the actual spread, so
-                    //I think the home team is going to cover the spread at the book. But by how
-                    //much? A couple points is ok, but the larger the prediction, the 
-                    //more confident I am in this pick
-                    if ((cfbDto.getPointSpread() - predSpread) > confidenceSpread) {
-                        System.out.println(cfbDto.getDateTime() + " HOME GOOD GAME. Confidence: " + confidenceSpread + " points! Actual: "
-                                + (cfbDto.getPointSpread() - predSpread));
-                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
-                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
-                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
-                        System.out.println("Predicted Spread: " + predSpread);
-                        System.out.println("Home Score : " + predHomeScore);
-                        System.out.println("Away Score : " + predAwayScore);
-                        System.out.println("");
-                        goodCount++;
-                    } else {
-//                        System.out.println("HOME NOT WORTH IT Confidence: " + confidenceSpread
-//                                + " points, Actual: " + (cfbDto.getPointSpread() - predSpread));
-//                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
-//                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
-//                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
-//                        System.out.println("Predicted Spread: " + predSpread);
-//                        System.out.println("Home Score : " + predHomeScore);
-//                        System.out.println("Away Score : " + predAwayScore);
-                        badCount++;
-                    }
-                } //CHECK IF AWAY IS A GOOD PICK
-                //If predicted spread is less than the actual spread, meaning
-                // I think the Home Team will lose by more points than actual spread
-                //or better yet the Away team will either win or cover the spread
-                else if (predSpread > cfbDto.getPointSpread()) {
-                    //Ok! This is good too, because now the AWAY team looks good.
-                    //My predicted spread says either the AWAY team witll win or 
-                    //cover the spread. But again, by home much? We still need some
-                    //confidence
-                    if ((predSpread - cfbDto.getPointSpread()) > confidenceSpread) {
-                        System.out.println(cfbDto.getDateTime() + " AWAY GOOD GAME. Confidence: " + confidenceSpread + " points! Actual: "
-                                + (predSpread - cfbDto.getPointSpread()));
-                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
-                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
-                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
-                        System.out.println("Predicted Spread: " + predSpread);
-                        System.out.println("Home Score : " + predHomeScore);
-                        System.out.println("Away Score : " + predAwayScore);
-                        System.out.println("");
-                        goodCount++;
-                    } else {
-//                        System.out.println("AWAY NOT WORTH IT Confidence: " + confidenceSpread
-//                                + " points, Actual: " + (predSpread - cfbDto.getPointSpread()));
-//                        System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
-//                        System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
-//                        System.out.println("Point Spread: " + cfbDto.getPointSpread());
-//                        System.out.println("Predicted Spread: " + predSpread);
-//                        System.out.println("Home Score : " + predHomeScore);
-//                        System.out.println("Away Score : " + predAwayScore);
-                        badCount++;
-                    }
-                } else {
-//                    System.out.println("POINT SPREAD IDENTICAL. Confidence: " + confidenceSpread
-//                            + " points, Actual: " + (cfbDto.getPointSpread() - predSpread));
-//                    System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
-//                    System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
-//                    System.out.println("Point Spread: " + cfbDto.getPointSpread());
-//                    System.out.println("Predicted Spread: " + predSpread);
-//                    System.out.println("Home Score : " + predHomeScore);
-//                    System.out.println("Away Score : " + predAwayScore);
-                    idenPointSpread++;
-                }
-                //NO POINT SPREAD in the DAtabase
-            } else {
-//                System.out.println("NO POINT SPREAD.");
-//                System.out.println("HOME TEAM: :" + cfbDto.getHomeTeamName());
-//                System.out.println("AWAY TEAM: :" + cfbDto.getAwayTeamName());
-//                System.out.println("Point Spread: " + cfbDto.getPointSpread());
-                noPointSpreadCount++;
-            }
-        }
-
-        System.out.println("TOTAL GOOD: " + goodCount);
-        System.out.println("TOTAL BAD: " + badCount);
-        System.out.println("TOTAL NO Spread: " + noPointSpreadCount);
-        System.out.println("IDENTICAL SPREADS: " + idenPointSpread);
     }
 
     private Double getAvgPPGFor(String teamName) throws SQLException {

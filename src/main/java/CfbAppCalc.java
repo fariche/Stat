@@ -14,12 +14,11 @@ public class CfbAppCalc {
         List<CfbDto> cfbDtos = sports.dbToDto(13.0);
         
         //Calc Winners
-       sports.calcWinners(cfbDtos,20.0);
+       sports.calcWinners(cfbDtos,18.0);
         
-        //Test Calculation
-        //sports.testCalc(16.0);
-        
-        //QC Picks
+        //Test Calculation (Confidence Spread, Current Week, Weeks to test starting at
+        // Current week - 1 and going down)
+        //sports.testCalc(18.0,13,5);
         
         
         System.out.println("Done");

@@ -3,19 +3,26 @@ package com.ariche.cbb;
 import javax.xml.bind.annotation.*;
 import java.util.List;
 
-@XmlRootElement(name = "ArrayOfGame")
+@XmlRootElement(name = "ArrayOfTeam")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ArrayOfGame {
+public class ArrayOfTeam {
 
-    @XmlElement(name = "Game")
-    private List<Game> game;
-
-
-    public List<Game> getGame() {
-        return game;
+    /**
+     * @return the team
+     */
+    public List<Team> getTeams() {
+        return team;
     }
 
-    public void setGame(List<Game> Game) {
-        this.game = game;
+    /**
+     * @param team the team to set
+     */
+    public void setTeams(List<Team> team) {
+        this.team = team;
     }
+
+    @XmlElement(name = "Team")
+    private List<Team> team;
+
+   
 }

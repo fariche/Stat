@@ -15,6 +15,62 @@ import javax.xml.bind.annotation.XmlElement;
 public class CbbDto {
 
     /**
+     * @return the awayConference
+     */
+    public String getAwayConference() {
+        return awayConference;
+    }
+
+    /**
+     * @param awayConference the awayConference to set
+     */
+    public void setAwayConference(String awayConference) {
+        this.awayConference = awayConference;
+    }
+
+    /**
+     * @return the awayRank
+     */
+    public String getAwayRank() {
+        return awayRank;
+    }
+
+    /**
+     * @param awayRank the awayRank to set
+     */
+    public void setAwayRank(String awayRank) {
+        this.awayRank = awayRank;
+    }
+
+    /**
+     * @return the homeConference
+     */
+    public String getHomeConference() {
+        return homeConference;
+    }
+
+    /**
+     * @param homeConference the homeConference to set
+     */
+    public void setHomeConference(String homeConference) {
+        this.homeConference = homeConference;
+    }
+
+    /**
+     * @return the homeRank
+     */
+    public String getHomeRank() {
+        return homeRank;
+    }
+
+    /**
+     * @param homeRank the homeRank to set
+     */
+    public void setHomeRank(String homeRank) {
+        this.homeRank = homeRank;
+    }
+
+    /**
      * @return the avgAwayPPGAgainst
      */
     public Double getAvgAwayPPGAgainst() {
@@ -57,6 +113,10 @@ public class CbbDto {
     private String avgHomePPGFor;
     private String avgAwayPPGAgainst;
     private String avgHomePPGAgainst;
+    private String homeConference;
+    private String homeRank;
+    private String awayConference;
+    private String awayRank;
 
     /**
      * @return the status
